@@ -14,11 +14,10 @@ datasource db {
 }
 
 model Users {
-  id         String  @id @default(uuid())
-  firstName  String
-  middleName String?
-  lastName   String
-  email      String  @unique
-  username   String  @unique
-  password   String
+  id        String @id @default(uuid())
+  firstName String
+  lastName  String
+  email     String @unique
+  username  String @unique
+  password  String
 }
