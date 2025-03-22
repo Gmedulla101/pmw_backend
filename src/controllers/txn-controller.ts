@@ -67,6 +67,10 @@ export const getAllTransactions = asyncHandler(
       where: {
         OR: [{ sellerId: userId }, { buyerId: userId }],
       },
+      include: {
+        seller: true,
+        buyer: true,
+      },
     });
 
     res.status(StatusCodes.OK).json({
