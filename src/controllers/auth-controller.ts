@@ -34,9 +34,7 @@ export const register = asyncHandler(
     });
 
     if (existingUser) {
-      throw new BadRequestError(
-        'A user with your email or username already exists'
-      );
+      throw new BadRequestError('This user already exists');
     }
 
     //HASHING THE USER'S PASSWORD
@@ -73,6 +71,12 @@ export const register = asyncHandler(
     res.status(StatusCodes.OK).json({
       success: true,
       msg: 'Registration successful',
+      user: {
+        username: newUser.username,
+        firstName: newUser.firstName,
+        lastName: newUser.lastName,
+        email: newUser.email,
+      },
       token,
     });
   }
@@ -134,5 +138,11 @@ export const login = asyncHandler(async (req: ModifiedReq, res: Response) => {
     success: true,
     msg: 'Login successful',
     token,
+    user: {
+      username: existingUser.username,
+      firstName: existingUser.firstName,
+      lastName: existingUser.lastName,
+      email: existingUser.email,
+    },
   });
 });

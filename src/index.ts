@@ -1,5 +1,6 @@
 import express from 'express';
 import dotenv from 'dotenv';
+import cors from 'cors';
 
 //ERROR MIDDLERWARE
 import notFound from './middleware/notfound-middleware';
@@ -12,6 +13,7 @@ dotenv.config();
 const app = express();
 
 //BOILERPLATE MIDDLEWARE
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 

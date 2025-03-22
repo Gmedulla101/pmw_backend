@@ -14,10 +14,11 @@ datasource db {
 }
 
 model Users {
-  id        String @id @default(uuid())
-  firstName String
-  lastName  String
-  email     String @unique
-  username  String @unique
-  password  String
+  id         String @id @default(uuid())
+  firstName  String
+  lastName   String
+  email      String @unique
+  username   String @unique
+  profilePic String @default("http://militaryhealthinstitute.org/wp-content/uploads/sites/37/2021/08/blank-profile-picture-png.png")
+  password   String 
 }
