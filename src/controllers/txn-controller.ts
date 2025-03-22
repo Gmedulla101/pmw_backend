@@ -7,7 +7,6 @@ import { ModifiedReq } from '../middleware/auth-middleware';
 import { Response, NextFunction } from 'express';
 import asyncHandler from 'express-async-handler';
 
-
 //CREATE TRANSACTION FUNCTIONALITY
 export const createTransaction = asyncHandler(
   async (req: ModifiedReq, res: Response) => {
@@ -56,12 +55,23 @@ export const createTransaction = asyncHandler(
   }
 );
 
-
 //GET ALL TRASNSACTIONS FUNCTIONALITY
 export const getAllTransactions = asyncHandler(
   async (req: ModifiedReq, res: Response) => {
+    const userId = req.user?.userId;
+    if (!userId) {
+      throw new UnAuthenticatedError('Unauthorised operation');
+    }
+
+    const userTransactions = await prisma.transactions.findMany({
+      where: {
+        OR: [{ sellerId: userId }, { buyerId: userId }],
+      },
+    });
+
     res.status(StatusCodes.OK).json({
       msg: 'Fetched transactions',
+      transactions: userTransactions,
     });
   }
 );
