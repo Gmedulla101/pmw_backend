@@ -21,4 +21,15 @@ model Users {
   username   String @unique
   profilePic String @default("http://militaryhealthinstitute.org/wp-content/uploads/sites/37/2021/08/blank-profile-picture-png.png")
   password   String 
+  sales Transactions[] @relation("seller")
+  purchases Transactions[] @relation("buyer")
+  createdAt DateTime @default(now())
+}
+
+model Transactions {
+  id String @id @default(uuid())
+  sellerId String @unique
+  buyerId String @unique
+  seller Users @relation(name: "seller", fields: [sellerId], references: [id])
+  buyer Users @relation(name: "buyer", fields: [buyerId], references: [id])
 }
