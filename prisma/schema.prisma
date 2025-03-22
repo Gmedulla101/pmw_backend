@@ -14,22 +14,26 @@ datasource db {
 }
 
 model Users {
-  id         String @id @default(uuid())
+  id         String         @id @default(uuid())
   firstName  String
   lastName   String
-  email      String @unique
-  username   String @unique
-  profilePic String @default("http://militaryhealthinstitute.org/wp-content/uploads/sites/37/2021/08/blank-profile-picture-png.png")
-  password   String 
-  sales Transactions[] @relation("seller")
-  purchases Transactions[] @relation("buyer")
-  createdAt DateTime @default(now())
+  email      String         @unique
+  username   String         @unique
+  profilePic String         @default("http://militaryhealthinstitute.org/wp-content/uploads/sites/37/2021/08/blank-profile-picture-png.png")
+  password   String
+  sales      Transactions[] @relation("seller")
+  purchases  Transactions[] @relation("buyer")
+  createdAt  DateTime       @default(now())
 }
 
 model Transactions {
-  id String @id @default(uuid())
-  sellerId String @unique
-  buyerId String @unique
-  seller Users @relation(name: "seller", fields: [sellerId], references: [id])
-  buyer Users @relation(name: "buyer", fields: [buyerId], references: [id])
+  id              String  @id @default(uuid())
+  sellerId        String?
+  buyerId         String?
+  status          String  @default("pending")
+  txnItem         String
+  txnItemCategory String
+  txnItemValue    Int
+  seller          Users?  @relation(name: "seller", fields: [sellerId], references: [id])
+  buyer           Users?  @relation(name: "buyer", fields: [buyerId], references: [id])
 }

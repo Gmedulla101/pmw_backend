@@ -1,5 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
 import { Request, Response, NextFunction } from 'express';
+import BadRequestError from '../errors/bad-request';
 
 /* interface ModifiedErr extends Error {
   statusCode: number;
@@ -39,6 +40,12 @@ const errorHandlerMiddleware = (
     customError.msg = `Duplicate value entered for ${Object.keys(
       err.keyValue
     )} field: Email already exists`;
+    customError.statusCode = 400;
+  }
+
+  //INVALID PROVISIONING
+  if (err.code === 'P2003') {
+    customError.msg = 'Invalid seller or buyer ID provided';
     customError.statusCode = 400;
   }
 
