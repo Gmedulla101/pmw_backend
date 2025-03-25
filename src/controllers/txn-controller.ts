@@ -13,38 +13,37 @@ export const createTransaction = asyncHandler(
     //IDENTIFYING ID OF THE INITIATOR
     const initiatorId = req.user?.userId;
     const {
-      seller,
-      buyer,
+      userRole,
       txnItem,
       txnItemDescription,
       txnItemCategory,
       txnItemValue,
     } = req.body;
 
-    //MATCHING THE USER TO WHAT THEY SELECTED
-    if (!initiatorId) {
-      throw new BadRequestError('Unauthorised request');
+    //CHECKING FOR AND CREATING THE CATEGORIES
+    let category = await prisma.categories.findUnique({
+      where: { categoryName: txnItemCategory },
+    });
+
+    if (!category) {
+      console.log(
+        `Category "${txnItemCategory}" not found. Creating new category...`
+      );
+      category = await prisma.categories.create({
+        data: { categoryName: txnItemCategory },
+      });
     }
-    const sellerProfile = seller
-      ? await prisma.users.findUnique({ where: { username: seller } })
-      : null;
 
-    if (seller && !sellerProfile) throw new BadRequestError('Buyer not found');
-
-    const buyerProfile = buyer
-      ? await prisma.users.findUnique({ where: { username: buyer } })
-      : null;
-
-    if (buyer && !buyerProfile) throw new BadRequestError('Buyer not found');
 
     //CREATING THE TRANSACTION
     const newTransaction = await prisma.transactions.create({
       data: {
-        sellerId: sellerProfile?.id || null,
-        buyerId: buyerProfile?.id || null,
+        sellerId: userRole === 'seller' ? initiatorId : null,
+        buyerId: userRole === 'buyer' ? initiatorId : null,
         txnItem,
-        txnItemCategory,
+        txnItemCategoryId: category.id,
         txnItemValue: Number(txnItemValue),
+        txnItemDescription
       },
     });
 

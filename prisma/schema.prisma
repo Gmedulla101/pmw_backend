@@ -27,13 +27,24 @@ model Users {
 }
 
 model Transactions {
-  id              String  @id @default(uuid())
-  sellerId        String?
-  buyerId         String?
-  status          String  @default("pending")
-  txnItem         String
-  txnItemCategory String
-  txnItemValue    Int
-  seller          Users?  @relation(name: "seller", fields: [sellerId], references: [id])
-  buyer           Users?  @relation(name: "buyer", fields: [buyerId], references: [id])
+  id                 String     @id @default(uuid())
+  sellerId           String?
+  buyerId            String?
+  txnItem            String
+  txnItemCategoryId    String
+  txnItemValue       Int
+  txnItemDescription String
+  status             String     @default("pending")
+  productConfirmed   Boolean    @default(false)
+  cashConfirmed      Boolean    @default(false)
+  seller             Users?     @relation(name: "seller", fields: [sellerId], references: [id])
+  buyer              Users?     @relation(name: "buyer", fields: [buyerId], references: [id])
+  category           Categories @relation(fields: [txnItemCategoryId], references: [id])
+}
+
+model Categories {
+  id           String @id @default(uuid())
+  categoryName String @unique
+
+  transactions Transactions[]
 }
