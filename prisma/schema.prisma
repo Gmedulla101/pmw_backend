@@ -31,7 +31,7 @@ model Transactions {
   sellerId           String?
   buyerId            String?
   txnItem            String
-  txnItemCategoryId    String
+  txnItemCategoryId  String
   txnItemValue       Int
   txnItemDescription String
   status             String     @default("pending")

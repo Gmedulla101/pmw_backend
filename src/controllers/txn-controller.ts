@@ -34,7 +34,6 @@ export const createTransaction = asyncHandler(
       });
     }
 
-
     //CREATING THE TRANSACTION
     const newTransaction = await prisma.transactions.create({
       data: {
@@ -43,7 +42,7 @@ export const createTransaction = asyncHandler(
         txnItem,
         txnItemCategoryId: category.id,
         txnItemValue: Number(txnItemValue),
-        txnItemDescription
+        txnItemDescription,
       },
     });
 
