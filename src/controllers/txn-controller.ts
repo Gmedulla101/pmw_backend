@@ -106,8 +106,43 @@ export const getTransaction = asyncHandler(
 
 export const updateTransaction = asyncHandler(
   async (req: ModifiedReq, res: Response) => {
+    const { txnId } = req.params;
+    const { status, productConfirmed, cashConfirmed, invitationSent } =
+      req.body;
+
+    interface UpdateObject {
+      status?: string;
+      productConfirmed?: boolean;
+      cashConfirmed?: boolean;
+      invitationSent?: boolean;
+    }
+
+    let updateObject: UpdateObject = {};
+
+    if (status) {
+      updateObject.status = status;
+    }
+    if (productConfirmed) {
+      updateObject.productConfirmed = productConfirmed;
+    }
+    if (cashConfirmed) {
+      updateObject.cashConfirmed = cashConfirmed;
+    }
+    if (invitationSent) {
+      updateObject.invitationSent = invitationSent;
+    }
+    const updatedTxn = await prisma.transactions.update({
+      where: {
+        id: txnId,
+      },
+      data: {
+        ...updateObject,
+      },
+    });
+
     res.status(StatusCodes.OK).json({
       msg: 'Transaction updated',
+      txn: updatedTxn,
     });
   }
 );

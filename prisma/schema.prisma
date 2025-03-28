@@ -28,6 +28,7 @@ model Users {
 
 model Transactions {
   id                 String     @id @default(uuid())
+  initiatorId        String
   sellerId           String?
   buyerId            String?
   txnItem            String
