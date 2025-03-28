@@ -13,7 +13,7 @@ const txnRouter = Router();
 
 txnRouter.post('/create-transaction', auth, createTransaction);
 txnRouter.get('/get-all-transactions', auth, getAllTransactions);
-txnRouter.get('/get-transaction', auth, getTransaction);
+txnRouter.get('/get-transaction/:txnId', auth, getTransaction);
 txnRouter.put('/update-transaction', auth, updateTransaction);
 txnRouter.delete('/delete-transaction', auth, deleteTransaction);
 

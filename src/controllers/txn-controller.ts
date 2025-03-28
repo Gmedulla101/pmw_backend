@@ -80,8 +80,26 @@ export const getAllTransactions = asyncHandler(
 
 export const getTransaction = asyncHandler(
   async (req: ModifiedReq, res: Response) => {
+    const { txnId } = req.params;
+
+    const userTxn = await prisma.transactions.findFirst({
+      where: {
+        id: txnId,
+      },
+      include: {
+        seller: true,
+        buyer: true,
+        category: true,
+      },
+    });
+
+    if (!userTxn) {
+      throw new BadRequestError('The requested transaction does not exist');
+    }
+
     res.status(StatusCodes.OK).json({
       msg: 'Fetched transaction',
+      txn: userTxn,
     });
   }
 );

@@ -37,6 +37,7 @@ model Transactions {
   status             String     @default("pending")
   productConfirmed   Boolean    @default(false)
   cashConfirmed      Boolean    @default(false)
+  invitationSent     Boolean    @default(false)
   seller             Users?     @relation(name: "seller", fields: [sellerId], references: [id])
   buyer              Users?     @relation(name: "buyer", fields: [buyerId], references: [id])
   category           Categories @relation(fields: [txnItemCategoryId], references: [id])
