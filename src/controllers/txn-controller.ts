@@ -20,6 +20,10 @@ export const createTransaction = asyncHandler(
       txnItemValue,
     } = req.body;
 
+    if (!initiatorId) {
+      throw new UnAuthenticatedError('Invalid request user');
+    }
+
     //CHECKING FOR AND CREATING THE CATEGORIES
     let category = await prisma.categories.findUnique({
       where: { categoryName: txnItemCategory },
@@ -37,6 +41,7 @@ export const createTransaction = asyncHandler(
     //CREATING THE TRANSACTION
     const newTransaction = await prisma.transactions.create({
       data: {
+        initiatorId,
         sellerId: userRole === 'seller' ? initiatorId : null,
         buyerId: userRole === 'buyer' ? initiatorId : null,
         txnItem,

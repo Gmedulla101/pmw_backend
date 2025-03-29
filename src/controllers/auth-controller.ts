@@ -72,6 +72,7 @@ export const register = asyncHandler(
       success: true,
       msg: 'Registration successful',
       user: {
+        userId: newUser.id,
         username: newUser.username,
         firstName: newUser.firstName,
         lastName: newUser.lastName,
@@ -139,6 +140,7 @@ export const login = asyncHandler(async (req: ModifiedReq, res: Response) => {
     msg: 'Login successful',
     token,
     user: {
+      userId: existingUser.id,
       username: existingUser.username,
       firstName: existingUser.firstName,
       lastName: existingUser.lastName,
