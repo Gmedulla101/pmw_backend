@@ -83,11 +83,12 @@ export const getAllTransactions = asyncHandler(
   }
 );
 
+//GETTING ONE TRANSACTION FUNCTIONALITY
 export const getTransaction = asyncHandler(
   async (req: ModifiedReq, res: Response) => {
     const { txnId } = req.params;
 
-    const userTxn = await prisma.transactions.findFirst({
+    const txn = await prisma.transactions.findFirst({
       where: {
         id: txnId,
       },
@@ -98,13 +99,13 @@ export const getTransaction = asyncHandler(
       },
     });
 
-    if (!userTxn) {
+    if (!txn) {
       throw new BadRequestError('The requested transaction does not exist');
     }
 
     res.status(StatusCodes.OK).json({
       msg: 'Fetched transaction',
-      txn: userTxn,
+      txn: txn,
     });
   }
 );
@@ -112,14 +113,22 @@ export const getTransaction = asyncHandler(
 export const updateTransaction = asyncHandler(
   async (req: ModifiedReq, res: Response) => {
     const { txnId } = req.params;
-    const { status, productConfirmed, cashConfirmed, invitationSent } =
-      req.body;
+    const {
+      status,
+      buyerId,
+      sellerId,
+      productConfirmed,
+      cashConfirmed,
+      invitationSent,
+    } = req.body;
 
     interface UpdateObject {
       status?: string;
       productConfirmed?: boolean;
       cashConfirmed?: boolean;
       invitationSent?: boolean;
+      sellerId?: string;
+      buyerId?: string;
     }
 
     let updateObject: UpdateObject = {};
@@ -136,6 +145,7 @@ export const updateTransaction = asyncHandler(
     if (invitationSent) {
       updateObject.invitationSent = invitationSent;
     }
+
     const updatedTxn = await prisma.transactions.update({
       where: {
         id: txnId,
@@ -156,6 +166,56 @@ export const deleteTransaction = asyncHandler(
   async (req: ModifiedReq, res: Response) => {
     res.status(StatusCodes.OK).json({
       msg: 'Transaction deleted',
+    });
+  }
+);
+
+//JOIN TRANSACTION FUNCTIONALITY
+export const joinTransaction = asyncHandler(
+  async (req: ModifiedReq, res: Response) => {
+    const userId = req.user?.userId;
+    const { txnId } = req.params;
+
+    if (!userId) {
+      throw new UnAuthenticatedError('Invalid request user');
+    }
+
+    //FIND THE TRANSACTION
+    const txn = await prisma.transactions.findUnique({
+      where: {
+        id: txnId,
+      },
+    });
+
+    if (!txn) {
+      throw new BadRequestError('The requested transaction does not exist');
+    }
+
+    let updatedTxn;
+
+    if (!txn.sellerId) {
+      updatedTxn = await prisma.transactions.update({
+        where: {
+          id: txnId,
+        },
+        data: {
+          sellerId: userId,
+        },
+      });
+    } else if (!txn.buyerId) {
+      updatedTxn = await prisma.transactions.update({
+        where: {
+          id: txnId,
+        },
+        data: {
+          buyerId: userId,
+        },
+      });
+    }
+
+    res.status(StatusCodes.OK).json({
+      success: true,
+      updatedTxn,
     });
   }
 );
