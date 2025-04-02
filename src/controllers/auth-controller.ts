@@ -5,9 +5,14 @@ import BadRequestError from '../errors/bad-request';
 import NotFound from '../errors/not-found';
 import { ModifiedReq } from '../middleware/auth-middleware';
 import { Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
+import jwt, { NotBeforeError } from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import asyncHandler from 'express-async-handler';
+import NotFoundError from '../errors/not-found';
+
+//////
+
+import { Resend } from 'resend';
 
 //USER REGISTRATION
 export const register = asyncHandler(
@@ -148,3 +153,93 @@ export const login = asyncHandler(async (req: ModifiedReq, res: Response) => {
     },
   });
 });
+
+export const confirmEmailSendOTP = asyncHandler(
+  async (req: ModifiedReq, res: Response) => {
+    const { email } = req.body;
+
+    const existingUser = await prisma.users.findUnique({
+      where: {
+        email,
+      },
+    });
+
+    if (!existingUser) {
+      throw new NotFoundError('The requested user does not exist');
+    }
+
+    //GENERATING USER CONFIRMATION CODE AND ADDING IT TO THE USER CONFIRMATION TABLE
+    const randomNumber = Math.floor(1000 + Math.random() * 9000);
+
+    await prisma.userConfirmation.update({
+      where: {
+        userEmail: existingUser.email,
+      },
+      data: {
+        confirmationCode: randomNumber,
+      },
+    });
+
+    const RESEND_KEY = process.env.RESEND_KEY;
+
+    if (!RESEND_KEY) {
+      throw new Error('Email key missing');
+    }
+
+    const resend = new Resend(RESEND_KEY);
+
+    resend.emails.send({
+      from: 'edoseghegreat41@gmail.com',
+      to: existingUser.email,
+      subject: 'Email confirmation',
+      html: `<main
+      style="
+        font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande',
+          'Lucida Sans', Arial, sans-serif;
+      "
+    >
+      <div
+        style="
+          background-color: black;
+          color: white;
+          padding: 10px;
+          margin-bottom: 40px;
+        "
+      >
+        <h1 style="text-align: center">Payway</h1>
+      </div>
+
+      <div style="text-align: center">
+        <p>
+          This is a confirmation email to reset your password, If you did't
+          start this process, please ignore this email.
+        </p>
+        <p>If this was you, use the code below to reset your password</p>
+
+        <div style="display: flex; justify-content: center">
+          <div></div>
+            <p
+              style="
+                width: 60%;
+                background-color: black;
+                padding: 10px 0;
+                border-radius: 8px;
+                color: white;
+                text-decoration: none;
+                color: white;
+              "
+            >
+              ${randomNumber}
+            </p>
+          </div>
+        </div>
+      </div>
+    </main>`,
+    });
+
+    res.status(StatusCodes.OK).json({
+      success: true,
+      msg: 'Email confirmed, confirmation code sent',
+    });
+  }
+);

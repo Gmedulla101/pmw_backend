@@ -14,16 +14,17 @@ datasource db {
 }
 
 model Users {
-  id         String         @id @default(uuid())
-  firstName  String
-  lastName   String
-  email      String         @unique
-  username   String         @unique
-  profilePic String         @default("http://militaryhealthinstitute.org/wp-content/uploads/sites/37/2021/08/blank-profile-picture-png.png")
-  password   String
-  sales      Transactions[] @relation("seller")
-  purchases  Transactions[] @relation("buyer")
-  createdAt  DateTime       @default(now())
+  id               String            @id @default(uuid())
+  firstName        String
+  lastName         String
+  email            String            @unique
+  username         String            @unique
+  profilePic       String            @default("http://militaryhealthinstitute.org/wp-content/uploads/sites/37/2021/08/blank-profile-picture-png.png")
+  password         String
+  sales            Transactions[]    @relation("seller")
+  purchases        Transactions[]    @relation("buyer")
+  createdAt        DateTime          @default(now())
+  userConfirmation UserConfirmation?
 }
 
 model Transactions {
@@ -49,4 +50,12 @@ model Categories {
   categoryName String @unique
 
   transactions Transactions[]
+}
+
+model UserConfirmation {
+  id               String  @id @default(uuid())
+  userEmail        String  @unique
+  confirmed        Boolean @default(false)
+  confirmationCode Int
+  user             Users   @relation(fields: [userEmail], references: [email])
 }

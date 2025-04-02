@@ -2,9 +2,9 @@ import prisma from '../db';
 import { StatusCodes } from 'http-status-codes';
 import UnAuthenticatedError from '../errors/unauth';
 import BadRequestError from '../errors/bad-request';
-import NotFound from '../errors/not-found';
+import NotFoundError from '../errors/not-found';
 import { ModifiedReq } from '../middleware/auth-middleware';
-import { Response, NextFunction } from 'express';
+import { Response } from 'express';
 import asyncHandler from 'express-async-handler';
 
 //CREATE TRANSACTION FUNCTIONALITY
@@ -76,6 +76,12 @@ export const getAllTransactions = asyncHandler(
       },
     });
 
+    if (!userTransactions) {
+      throw new NotFoundError(
+        'There are no transactions associated with this user'
+      );
+    }
+
     res.status(StatusCodes.OK).json({
       msg: 'Fetched transactions',
       transactions: userTransactions,
@@ -100,7 +106,7 @@ export const getTransaction = asyncHandler(
     });
 
     if (!txn) {
-      throw new BadRequestError('The requested transaction does not exist');
+      throw new NotFoundError('The requested transaction does not exist');
     }
 
     res.status(StatusCodes.OK).json({
@@ -188,7 +194,7 @@ export const joinTransaction = asyncHandler(
     });
 
     if (!txn) {
-      throw new BadRequestError('The requested transaction does not exist');
+      throw new NotFoundError('The requested transaction does not exist');
     }
 
     let updatedTxn;
