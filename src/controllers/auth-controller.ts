@@ -11,8 +11,7 @@ import asyncHandler from 'express-async-handler';
 import NotFoundError from '../errors/not-found';
 
 //////
-
-import { Resend } from 'resend';
+import transporter from '../utils/nodemailer';
 
 //USER REGISTRATION
 export const register = asyncHandler(
@@ -158,6 +157,10 @@ export const confirmEmailSendOTP = asyncHandler(
   async (req: ModifiedReq, res: Response) => {
     const { email } = req.body;
 
+    if (!email) {
+      throw new BadRequestError('Please fill in all the fields');
+    }
+
     const existingUser = await prisma.users.findUnique({
       where: {
         email,
@@ -180,19 +183,12 @@ export const confirmEmailSendOTP = asyncHandler(
       },
     });
 
-    const RESEND_KEY = process.env.RESEND_KEY;
-
-    if (!RESEND_KEY) {
-      throw new Error('Email key missing');
-    }
-
-    const resend = new Resend(RESEND_KEY);
-
-    resend.emails.send({
-      from: 'edoseghegreat41@gmail.com',
-      to: existingUser.email,
-      subject: 'Email confirmation',
-      html: `<main
+    await transporter.sendMail(
+      {
+        from: 'edoseghegreat41@gmail.com',
+        to: existingUser.email,
+        subject: 'Email confirmation',
+        html: `<main
       style="
         font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande',
           'Lucida Sans', Arial, sans-serif;
@@ -216,30 +212,42 @@ export const confirmEmailSendOTP = asyncHandler(
         </p>
         <p>If this was you, use the code below to reset your password</p>
 
-        <div style="display: flex; justify-content: center">
-          <div></div>
-            <p
+        <div style="text-align: center; width: 200px; margin: 50px auto;">
+    
+            <a
+              href="#"
               style="
                 width: 60%;
                 background-color: black;
-                padding: 10px 0;
+                padding: 10px 30px;
                 border-radius: 8px;
                 color: white;
                 text-decoration: none;
                 color: white;
               "
             >
-              ${randomNumber}
-            </p>
+             ${randomNumber}
+            </a>
           </div>
         </div>
       </div>
-    </main>`,
-    });
-
-    res.status(StatusCodes.OK).json({
-      success: true,
-      msg: 'Email confirmed, confirmation code sent',
-    });
+    </main>
+`,
+      },
+      (error, info) => {
+        if (error) {
+          throw new BadRequestError(
+            `Error sending email: ${JSON.stringify(error)}`
+          );
+        } else {
+          res.status(StatusCodes.OK).json({
+            success: true,
+            msg: 'Email confirmed, confirmation code sent',
+            response: info.response,
+            email: existingUser.email,
+          });
+        }
+      }
+    );
   }
 );
