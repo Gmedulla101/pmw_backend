@@ -8,9 +8,6 @@
     "start": "node ./build/index.js",
     "build": "tsc -p ."
   },
-  "prisma": {
-    "seed": "ts-node ./src/prisma/seed.ts"
-  },
   "keywords": [],
   "author": "",
   "license": "ISC",

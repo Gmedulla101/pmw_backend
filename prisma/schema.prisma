@@ -24,7 +24,7 @@ model Users {
   sales            Transactions[]    @relation("seller")
   purchases        Transactions[]    @relation("buyer")
   createdAt        DateTime          @default(now())
-  userConfirmation UserConfirmation?
+  UserConfirmation UserConfirmation?
 }
 
 model Transactions {
@@ -53,9 +53,8 @@ model Categories {
 }
 
 model UserConfirmation {
-  id               String  @id @default(uuid())
-  userEmail        String  @unique
-  confirmed        Boolean @default(false)
+  id               String @id @default(uuid())
+  userId           String @unique
   confirmationCode Int
-  user             Users   @relation(fields: [userEmail], references: [email])
+  user             Users  @relation(fields: [userId], references: [id])
 }

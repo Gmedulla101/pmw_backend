@@ -12,6 +12,7 @@ import NotFoundError from '../errors/not-found';
 
 //////
 import transporter from '../utils/nodemailer';
+import generateForgotPasswordEmail from '../utils/fg-pswd-info';
 
 //USER REGISTRATION
 export const register = asyncHandler(
@@ -171,83 +172,38 @@ export const confirmEmailSendOTP = asyncHandler(
       throw new NotFoundError('The requested user does not exist');
     }
 
-    //GENERATING USER CONFIRMATION CODE AND ADDING IT TO THE USER CONFIRMATION TABLE
     const randomNumber = Math.floor(1000 + Math.random() * 9000);
 
-    await prisma.userConfirmation.update({
-      where: {
-        userEmail: existingUser.email,
+    const newEmailInfo = generateForgotPasswordEmail(
+      existingUser.email,
+      randomNumber
+    );
+
+    //IF THE USER CONFIRMATION ROW ALREADY EXISTS, IT WILL BE UPDATED ACCORDINGLY
+    await prisma.userConfirmation.upsert({
+      where: { userId: existingUser.id },
+      update: {
+        confirmationCode: randomNumber,
       },
-      data: {
+      create: {
+        userId: existingUser.id,
         confirmationCode: randomNumber,
       },
     });
 
-    await transporter.sendMail(
-      {
-        from: 'edoseghegreat41@gmail.com',
-        to: existingUser.email,
-        subject: 'Email confirmation',
-        html: `<main
-      style="
-        font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande',
-          'Lucida Sans', Arial, sans-serif;
-      "
-    >
-      <div
-        style="
-          background-color: black;
-          color: white;
-          padding: 10px;
-          margin-bottom: 40px;
-        "
-      >
-        <h1 style="text-align: center">Payway</h1>
-      </div>
-
-      <div style="text-align: center">
-        <p>
-          This is a confirmation email to reset your password, If you did't
-          start this process, please ignore this email.
-        </p>
-        <p>If this was you, use the code below to reset your password</p>
-
-        <div style="text-align: center; width: 200px; margin: 50px auto;">
-    
-            <a
-              href="#"
-              style="
-                width: 60%;
-                background-color: black;
-                padding: 10px 30px;
-                border-radius: 8px;
-                color: white;
-                text-decoration: none;
-                color: white;
-              "
-            >
-             ${randomNumber}
-            </a>
-          </div>
-        </div>
-      </div>
-    </main>
-`,
-      },
-      (error, info) => {
-        if (error) {
-          throw new BadRequestError(
-            `Error sending email: ${JSON.stringify(error)}`
-          );
-        } else {
-          res.status(StatusCodes.OK).json({
-            success: true,
-            msg: 'Email confirmed, confirmation code sent',
-            response: info.response,
-            email: existingUser.email,
-          });
-        }
+    transporter.sendMail(newEmailInfo, (error, info) => {
+      if (error) {
+        throw new BadRequestError(
+          `Error sending email: ${JSON.stringify(error)}`
+        );
+      } else {
+        res.status(StatusCodes.OK).json({
+          success: true,
+          msg: 'Email confirmed, confirmation code sent',
+          response: info.response,
+          userId: existingUser.id,
+        });
       }
-    );
+    });
   }
 );
