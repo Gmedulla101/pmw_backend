@@ -13,6 +13,7 @@ import NotFoundError from '../errors/not-found';
 //////
 import transporter from '../utils/nodemailer';
 import generateForgotPasswordEmail from '../utils/fg-pswd-info';
+import { STATUS_CODES } from 'http';
 
 //USER REGISTRATION
 export const register = asyncHandler(
@@ -181,12 +182,12 @@ export const confirmEmailSendOTP = asyncHandler(
 
     //IF THE USER CONFIRMATION ROW ALREADY EXISTS, IT WILL BE UPDATED ACCORDINGLY
     await prisma.userConfirmation.upsert({
-      where: { userId: existingUser.id },
+      where: { email },
       update: {
         confirmationCode: randomNumber,
       },
       create: {
-        userId: existingUser.id,
+        email,
         confirmationCode: randomNumber,
       },
     });
@@ -204,6 +205,43 @@ export const confirmEmailSendOTP = asyncHandler(
           userId: existingUser.id,
         });
       }
+    });
+  }
+);
+
+export const confirmCodeResetPassword = asyncHandler(
+  async (req: ModifiedReq, res: Response) => {
+    const { code, email, password } = req.body;
+
+    const userConfirmation = await prisma.userConfirmation.findUnique({
+      where: { email },
+    });
+
+    if (!userConfirmation) {
+      throw new BadRequestError(
+        'This user has not requested for a password reset'
+      );
+    }
+
+    //CHECKING THE CONFIRMATION CODE
+    if (userConfirmation.confirmationCode !== Number(code)) {
+      throw new BadRequestError('The entered code is incorrect. Try again');
+    }
+
+    //ENCRYPTING THE PASSWORD
+    const hashedSalt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, hashedSalt);
+
+    await prisma.users.update({
+      where: { email },
+      data: {
+        password: hashedPassword,
+      },
+    });
+
+    res.status(StatusCodes.OK).json({
+      success: true,
+      msg: 'Password reset succesful, proceeed to login',
     });
   }
 );

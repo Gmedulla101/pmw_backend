@@ -29,7 +29,7 @@ const generateForgotPasswordEmail = (email: string, randomNumber: number) => {
 
         <div style="text-align: center; width: 200px; margin: 50px auto;">
     
-            <a
+            <span
               href="#"
               style="
                 width: 60%;
@@ -42,7 +42,7 @@ const generateForgotPasswordEmail = (email: string, randomNumber: number) => {
               "
             >
              ${randomNumber}
-            </a>
+            </span>
           </div>
         </div>
       </div>
