@@ -1,4 +1,4 @@
-const generateForgotPasswordEmail = (email: string, randomNumber: number) => {
+const generateCreateTxnEmail = (email: string, txnId: string) => {
   return {
     from: 'edoseghegreat41@gmail.com',
     to: email,
@@ -22,14 +22,14 @@ const generateForgotPasswordEmail = (email: string, randomNumber: number) => {
 
       <div style="text-align: center">
         <p>
-          This is a confirmation email to reset your password, If you didn't
-          start this process, please ignore this email.
+        You have been invited to join a transaction on Payway . 
         </p>
-        <p>If this was you, use the code below to reset your password</p>
+       
 
         <div style="text-align: center; width: 200px; margin: 50px auto;">
     
-            <span
+            <a
+              href="http://localhost:5173/transaction/${txnId}"
               style="
                 width: 60%;
                 background-color: black;
@@ -40,8 +40,8 @@ const generateForgotPasswordEmail = (email: string, randomNumber: number) => {
                 color: white;
               "
             >
-             ${randomNumber}
-            </span>
+             Join the transaction
+            </a>
           </div>
         </div>
       </div>
@@ -50,4 +50,4 @@ const generateForgotPasswordEmail = (email: string, randomNumber: number) => {
   };
 };
 
-export default generateForgotPasswordEmail;
+export default generateCreateTxnEmail;

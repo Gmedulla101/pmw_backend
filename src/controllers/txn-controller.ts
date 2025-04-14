@@ -6,6 +6,8 @@ import NotFoundError from '../errors/not-found';
 import { ModifiedReq } from '../middleware/auth-middleware';
 import { Response } from 'express';
 import asyncHandler from 'express-async-handler';
+import transporter from '../utils/nodemailer';
+import generateCreateTxnEmail from '../utils/join-txn-info';
 
 //CREATE TRANSACTION FUNCTIONALITY
 export const createTransaction = asyncHandler(
@@ -116,6 +118,7 @@ export const getTransaction = asyncHandler(
   }
 );
 
+//UPDATE TRANSACTION FUNCTIONALITY
 export const updateTransaction = asyncHandler(
   async (req: ModifiedReq, res: Response) => {
     const { txnId } = req.params;
@@ -168,10 +171,48 @@ export const updateTransaction = asyncHandler(
   }
 );
 
+//DELETE TRANSACTION FUNCTIONALTY
 export const deleteTransaction = asyncHandler(
   async (req: ModifiedReq, res: Response) => {
     res.status(StatusCodes.OK).json({
       msg: 'Transaction deleted',
+    });
+  }
+);
+
+//INVITE TO TRANSACTION FUNCTIONALITY
+export const inviteToTransaction = asyncHandler(
+  async (req: ModifiedReq, res: Response) => {
+    const { txnId } = req.params;
+    const { email } = req.body;
+
+    const transaction = await prisma.transactions.findUnique({
+      where: { id: txnId },
+    });
+
+    if (!transaction) {
+      throw new BadRequestError('The requested transaction does not exist');
+    }
+
+    if (email) {
+      const emailInfo = generateCreateTxnEmail(email, transaction.id);
+
+      transporter.sendMail(emailInfo, (error) => {
+        if (error) {
+          throw new BadRequestError(JSON.stringify(error));
+        }
+      });
+    }
+
+    await prisma.transactions.update({
+      where: { id: txnId },
+      data: {
+        invitationSent: true,
+      },
+    });
+
+    res.status(StatusCodes.OK).json({
+      success: true,
     });
   }
 );
