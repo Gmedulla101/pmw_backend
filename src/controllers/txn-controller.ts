@@ -1,11 +1,18 @@
 import prisma from '../db';
+import axios from 'axios';
 import { StatusCodes } from 'http-status-codes';
+
+//ERRORS
 import UnAuthenticatedError from '../errors/unauth';
 import BadRequestError from '../errors/bad-request';
 import NotFoundError from '../errors/not-found';
+
+//THINGS FROM EXPRESS
 import { ModifiedReq } from '../middleware/auth-middleware';
 import { Response } from 'express';
 import asyncHandler from 'express-async-handler';
+
+//EMAIL FUNCTIONALIKTY UTILS
 import transporter from '../utils/nodemailer';
 import generateCreateTxnEmail from '../utils/join-txn-info';
 
@@ -75,6 +82,9 @@ export const getAllTransactions = asyncHandler(
       include: {
         seller: true,
         buyer: true,
+      },
+      orderBy: {
+        createdAt: 'asc',
       },
     });
 
@@ -196,14 +206,20 @@ export const inviteToTransaction = asyncHandler(
           throw new BadRequestError(JSON.stringify(error));
         }
       });
+      await prisma.transactions.update({
+        where: { id: txnId },
+        data: {
+          invitationSent: true,
+        },
+      });
+    } else {
+      await prisma.transactions.update({
+        where: { id: txnId },
+        data: {
+          invitationSent: true,
+        },
+      });
     }
-
-    await prisma.transactions.update({
-      where: { id: txnId },
-      data: {
-        invitationSent: true,
-      },
-    });
 
     res.status(StatusCodes.OK).json({
       success: true,
@@ -257,6 +273,54 @@ export const joinTransaction = asyncHandler(
     res.status(StatusCodes.OK).json({
       success: true,
       updatedTxn,
+    });
+  }
+);
+
+//PAYMENTS
+export const makePayment = asyncHandler(
+  async (req: ModifiedReq, res: Response) => {
+    const { txnId } = req.params;
+    const email = req.user?.email;
+
+    if (!email) {
+      throw new UnAuthenticatedError('User is not logged in');
+    }
+
+    const requiredTxn = await prisma.transactions.findUnique({
+      where: { id: txnId },
+    });
+
+    if (!requiredTxn) {
+      throw new BadRequestError(
+        'The required transaction does not exist, try again!'
+      );
+    }
+
+    const SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
+    if (!SECRET_KEY) {
+      throw new BadRequestError('ENV malformed: Paystack');
+    }
+
+    const response = await axios.post(
+      'https://api.paystack.co/transaction/initialize',
+      {
+        amount: (requiredTxn.txnItemValue * 100).toString(),
+        email,
+        callback_url: `http://localhost:5173/transaction/${requiredTxn.id}`,
+        reference: 'pay' + '_' + requiredTxn.id,
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${SECRET_KEY}`,
+        },
+      }
+    );
+
+    res.status(StatusCodes.OK).json({
+      sucess: true,
+      data: response.data.data,
     });
   }
 );
