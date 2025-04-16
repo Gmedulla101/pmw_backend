@@ -173,7 +173,7 @@ export const confirmEmailSendOTP = asyncHandler(
       throw new NotFoundError('The requested user does not exist');
     }
 
-    const randomNumber = Math.floor(1000 + Math.random() * 9000);
+    const randomNumber = Math.floor(100000 + Math.random() * 900000);
 
     const newEmailInfo = generateForgotPasswordEmail(
       existingUser.email,

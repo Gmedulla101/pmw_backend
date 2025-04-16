@@ -1,6 +1,6 @@
 const generateCreateTxnEmail = (email: string, txnId: string) => {
   return {
-    from: 'edoseghegreat41@gmail.com',
+    from: 'grobartig.inc@gmail.com',
     to: email,
     subject: 'Email confirmation',
     html: `<main

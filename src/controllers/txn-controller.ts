@@ -122,14 +122,8 @@ export const getTransaction = asyncHandler(
 export const updateTransaction = asyncHandler(
   async (req: ModifiedReq, res: Response) => {
     const { txnId } = req.params;
-    const {
-      status,
-      buyerId,
-      sellerId,
-      productConfirmed,
-      cashConfirmed,
-      invitationSent,
-    } = req.body;
+    const { status, productConfirmed, cashConfirmed, invitationSent } =
+      req.body;
 
     interface UpdateObject {
       status?: string;
@@ -227,7 +221,7 @@ export const joinTransaction = asyncHandler(
       throw new UnAuthenticatedError('Invalid request user');
     }
 
-    //FIND THE TRANSACTION
+    //Find the transaction
     const txn = await prisma.transactions.findUnique({
       where: {
         id: txnId,

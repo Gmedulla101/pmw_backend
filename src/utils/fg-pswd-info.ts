@@ -1,6 +1,6 @@
 const generateForgotPasswordEmail = (email: string, randomNumber: number) => {
   return {
-    from: 'edoseghegreat41@gmail.com',
+    from: 'grobartig.inc@gmail.com',
     to: email,
     subject: 'Email confirmation',
     html: `<main
