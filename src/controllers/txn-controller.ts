@@ -84,7 +84,7 @@ export const getAllTransactions = asyncHandler(
         buyer: true,
       },
       orderBy: {
-        createdAt: 'asc',
+        createdAt: 'desc',
       },
     });
 
@@ -248,6 +248,12 @@ export const joinTransaction = asyncHandler(
       throw new NotFoundError('The requested transaction does not exist');
     }
 
+    if (!txn.invitationSent) {
+      throw new BadRequestError(
+        'An invitation has not been sent for this transaction, wait for the invitation and try again'
+      );
+    }
+
     let updatedTxn;
 
     if (!txn.sellerId) {
@@ -305,7 +311,10 @@ export const makePayment = asyncHandler(
     const response = await axios.post(
       'https://api.paystack.co/transaction/initialize',
       {
-        amount: (requiredTxn.txnItemValue * 100).toString(),
+        amount: (
+          (requiredTxn.txnItemValue * 0.02 + requiredTxn.txnItemValue) *
+          100
+        ).toString(),
         email,
         callback_url: `http://localhost:5173/transaction/${requiredTxn.id}`,
         reference: 'pay' + '_' + requiredTxn.id,
@@ -322,5 +331,58 @@ export const makePayment = asyncHandler(
       sucess: true,
       data: response.data.data,
     });
+  }
+);
+
+export const verfiyPayment = asyncHandler(
+  async (req: ModifiedReq, res: Response) => {
+    const { txnRef } = req.params;
+
+    //Verifying the transaction with paystack
+
+    const SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
+    if (!SECRET_KEY) {
+      throw new BadRequestError('ENV malformed: Paystack');
+    }
+
+    const response = await axios.get(
+      `https://api.paystack.co/transaction/verify/${txnRef}`,
+      {
+        headers: {
+          Authorization: `Bearer ${SECRET_KEY}`,
+        },
+      }
+    );
+
+    if (response.data.data.status === 'success') {
+      const txnId = txnRef.split('_')[1];
+
+      const paidTxn = await prisma.transactions.findUnique({
+        where: {
+          id: txnId,
+        },
+      });
+
+      if (!paidTxn) {
+        throw new BadRequestError(
+          "I don't know how you paid for a transaction that does not exist, but you are a legend!"
+        );
+      }
+
+      await prisma.transactions.update({
+        where: {
+          id: txnId,
+        },
+        data: {
+          cashConfirmed: true,
+        },
+      });
+      res.status(StatusCodes.OK).json({
+        sucess: true,
+        data: 'Payment verified, please refresh the page',
+      });
+    } else {
+      throw new BadRequestError('Unsuccessful payment');
+    }
   }
 );

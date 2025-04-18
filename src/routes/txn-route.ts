@@ -10,6 +10,7 @@ import {
   joinTransaction,
   inviteToTransaction,
   makePayment,
+  verfiyPayment,
 } from '../controllers/txn-controller';
 
 const txnRouter = Router();
@@ -24,5 +25,6 @@ txnRouter.patch('/join-transaction/:txnId', auth, joinTransaction);
 
 //PAYMENT AND DELIVERY CONFIRMATION ROUTES
 txnRouter.post('/make-payment/:txnId', auth, makePayment);
+txnRouter.get('/verify-payment/:txnRef', auth, verfiyPayment);
 
 export default txnRouter;

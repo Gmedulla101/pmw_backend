@@ -155,6 +155,7 @@ export const login = asyncHandler(async (req: ModifiedReq, res: Response) => {
   });
 });
 
+//CONFIRMING EMAIL TO SEND THE RESET CODE
 export const confirmEmailSendOTP = asyncHandler(
   async (req: ModifiedReq, res: Response) => {
     const { email } = req.body;
