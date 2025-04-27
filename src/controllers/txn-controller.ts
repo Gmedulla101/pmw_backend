@@ -15,6 +15,9 @@ import asyncHandler from 'express-async-handler';
 //EMAIL FUNCTIONALIKTY UTILS
 import transporter from '../utils/nodemailer';
 import generateCreateTxnEmail from '../utils/join-txn-info';
+import sendPaymentConfimrationEmail from '../utils/confirm-payment-info';
+import { transferableAbortController } from 'util';
+import { send } from 'process';
 
 //CREATE TRANSACTION FUNCTIONALITY
 export const createTransaction = asyncHandler(
@@ -132,12 +135,18 @@ export const getTransaction = asyncHandler(
 export const updateTransaction = asyncHandler(
   async (req: ModifiedReq, res: Response) => {
     const { txnId } = req.params;
-    const { status, productConfirmed, cashConfirmed, invitationSent } =
-      req.body;
+    const {
+      status,
+      productConfirmed,
+      cashConfirmed,
+      invitationSent,
+      productDelivered,
+    } = req.body;
 
     interface UpdateObject {
       status?: string;
       productConfirmed?: boolean;
+      productDelivered?: boolean;
       cashConfirmed?: boolean;
       invitationSent?: boolean;
       sellerId?: string;
@@ -151,6 +160,9 @@ export const updateTransaction = asyncHandler(
     }
     if (productConfirmed) {
       updateObject.productConfirmed = productConfirmed;
+    }
+    if (productDelivered) {
+      updateObject.productDelivered = productDelivered;
     }
     if (cashConfirmed) {
       updateObject.cashConfirmed = cashConfirmed;
@@ -361,6 +373,10 @@ export const verfiyPayment = asyncHandler(
         where: {
           id: txnId,
         },
+        include: {
+          seller: true,
+          buyer: true,
+        },
       });
 
       if (!paidTxn) {
@@ -377,6 +393,20 @@ export const verfiyPayment = asyncHandler(
           cashConfirmed: true,
         },
       });
+
+      const emailInfo = sendPaymentConfimrationEmail(
+        paidTxn.seller?.email,
+        paidTxn.buyer?.firstName,
+        paidTxn.txnItemValue,
+        paidTxn.txnItem
+      );
+
+      transporter.sendMail(emailInfo, (error) => {
+        if (error) {
+          throw new BadRequestError(`${error}`);
+        }
+      });
+
       res.status(StatusCodes.OK).json({
         sucess: true,
         data: 'Payment verified, please refresh the page',
@@ -384,5 +414,13 @@ export const verfiyPayment = asyncHandler(
     } else {
       throw new BadRequestError('Unsuccessful payment');
     }
+  }
+);
+
+//PRODUCT/SERVICE
+export const deliverGoods = asyncHandler(
+  async (req: ModifiedReq, res: Response) => {
+    const { txnId } = req.params;
+    console.log(txnId);
   }
 );
