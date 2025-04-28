@@ -18,6 +18,7 @@ import generateCreateTxnEmail from '../utils/join-txn-info';
 import sendPaymentConfimrationEmail from '../utils/confirm-payment-info';
 import { transferableAbortController } from 'util';
 import { send } from 'process';
+import { STATUS_CODES } from 'http';
 
 //CREATE TRANSACTION FUNCTIONALITY
 export const createTransaction = asyncHandler(
@@ -422,5 +423,51 @@ export const deliverGoods = asyncHandler(
   async (req: ModifiedReq, res: Response) => {
     const { txnId } = req.params;
     console.log(txnId);
+  }
+);
+
+//USER PAYMENT PROCESSES
+export const getBanks = asyncHandler(
+  async (req: ModifiedReq, res: Response) => {
+    const SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
+    if (!SECRET_KEY) {
+      throw new BadRequestError('ENV error: paystack');
+    }
+
+    const response = await axios.get('https://api.paystack.co/bank', {
+      headers: {
+        Authorization: `Bearer ${SECRET_KEY}`,
+      },
+    });
+
+    res.status(StatusCodes.OK).json({
+      success: true,
+      data: response.data,
+    });
+  }
+);
+
+export const resolveAccount = asyncHandler(
+  async (req: ModifiedReq, res: Response) => {
+    const { account_number, bank_code } = req.query;
+
+    const SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
+    if (!SECRET_KEY) {
+      throw new BadRequestError('ENV error: paystack');
+    }
+
+    const response = await axios.get(
+      `https://api.paystack.co/bank/resolve?account_number=${account_number}&bank_code=${bank_code}`,
+      {
+        headers: {
+          Authorization: `Bearer ${SECRET_KEY}`,
+        },
+      }
+    );
+
+    res.status(StatusCodes.OK).json({
+      success: true,
+      data: response.data,
+    });
   }
 );

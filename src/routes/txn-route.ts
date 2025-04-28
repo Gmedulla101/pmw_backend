@@ -12,6 +12,8 @@ import {
   makePayment,
   verfiyPayment,
   deliverGoods,
+  getBanks,
+  resolveAccount,
 } from '../controllers/txn-controller';
 
 const txnRouter = Router();
@@ -28,5 +30,7 @@ txnRouter.patch('/join-transaction/:txnId', auth, joinTransaction);
 txnRouter.post('/make-payment/:txnId', auth, makePayment);
 txnRouter.get('/verify-payment/:txnRef', auth, verfiyPayment);
 txnRouter.put('deliver-goods/:txnId', auth, deliverGoods);
+txnRouter.get('/get-banks', getBanks);
+txnRouter.get('/resolve-account', resolveAccount);
 
 export default txnRouter;
