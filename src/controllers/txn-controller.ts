@@ -442,7 +442,7 @@ export const getBanks = asyncHandler(
 
     res.status(StatusCodes.OK).json({
       success: true,
-      data: response.data,
+      data: response.data.data,
     });
   }
 );
@@ -467,7 +467,39 @@ export const resolveAccount = asyncHandler(
 
     res.status(StatusCodes.OK).json({
       success: true,
-      data: response.data,
+      data: response.data.data,
+    });
+  }
+);
+
+export const collectPayment = asyncHandler(
+  async (req: ModifiedReq, res: Response) => {
+    const { txnId } = req.body;
+
+    const transaction = await prisma.transactions.findUnique({
+      where: {
+        id: txnId,
+      },
+    });
+
+    if (!transaction) {
+      throw new BadRequestError(
+        'The transaction you are trying to receive a payment for does not exist!'
+      );
+    }
+
+    await prisma.transactions.update({
+      where: {
+        id: txnId,
+      },
+      data: {
+        status: 'completed',
+      },
+    });
+
+    res.status(StatusCodes.OK).json({
+      success: true,
+      msg: 'Payment successfully processed',
     });
   }
 );
