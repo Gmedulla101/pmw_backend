@@ -3,7 +3,7 @@ import axios from 'axios';
 import { StatusCodes } from 'http-status-codes';
 
 //ERRORS
-import UnAuthenticatedError from '../errors/unauth';
+import UnAuthenticatedError from '../errors/unAuth';
 import BadRequestError from '../errors/bad-request';
 import NotFoundError from '../errors/not-found';
 

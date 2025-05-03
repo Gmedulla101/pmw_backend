@@ -3,12 +3,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const unauth_1 = __importDefault(require("../errors/unauth"));
+const unAuth_1 = __importDefault(require("../errors/unAuth"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const auth = (req, res, next) => {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer')) {
-        throw new unauth_1.default('JWT token missing!');
+        throw new unAuth_1.default('JWT token missing!');
     }
     const token = authHeader.split(' ')[1];
     try {
@@ -25,7 +25,7 @@ const auth = (req, res, next) => {
         next();
     }
     catch (err) {
-        throw new unauth_1.default(err.message);
+        throw new unAuth_1.default(err.message);
     }
 };
 exports.default = auth;

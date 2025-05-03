@@ -15,12 +15,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getProfileInfo = void 0;
 const db_1 = __importDefault(require("../db"));
 const http_status_codes_1 = require("http-status-codes");
-const unauth_1 = __importDefault(require("../errors/unauth"));
+const unAuth_1 = __importDefault(require("../errors/unAuth"));
 const bad_request_1 = __importDefault(require("../errors/bad-request"));
 const express_async_handler_1 = __importDefault(require("express-async-handler"));
 exports.getProfileInfo = (0, express_async_handler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     if (!req.user) {
-        throw new unauth_1.default('Unauthorised operation');
+        throw new unAuth_1.default('Unauthorised operation');
     }
     const { userId } = req.user;
     const user = yield db_1.default.users.findFirst({

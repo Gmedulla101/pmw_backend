@@ -17,7 +17,7 @@ const db_1 = __importDefault(require("../db"));
 const axios_1 = __importDefault(require("axios"));
 const http_status_codes_1 = require("http-status-codes");
 //ERRORS
-const unauth_1 = __importDefault(require("../errors/unauth"));
+const unAuth_1 = __importDefault(require("../errors/unAuth"));
 const bad_request_1 = __importDefault(require("../errors/bad-request"));
 const not_found_1 = __importDefault(require("../errors/not-found"));
 const express_async_handler_1 = __importDefault(require("express-async-handler"));
@@ -32,7 +32,7 @@ exports.createTransaction = (0, express_async_handler_1.default)((req, res) => _
     const initiatorId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId;
     const { userRole, txnItem, txnItemDescription, txnItemCategory, txnItemValue, } = req.body;
     if (!initiatorId) {
-        throw new unauth_1.default('Invalid request user');
+        throw new unAuth_1.default('Invalid request user');
     }
     //CHECKING FOR AND CREATING THE CATEGORIES
     let category = yield db_1.default.categories.findUnique({
@@ -66,7 +66,7 @@ exports.getAllTransactions = (0, express_async_handler_1.default)((req, res) => 
     var _a;
     const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId;
     if (!userId) {
-        throw new unauth_1.default('Unauthorised operation');
+        throw new unAuth_1.default('Unauthorised operation');
     }
     const userTransactions = yield db_1.default.transactions.findMany({
         where: {
@@ -188,7 +188,7 @@ exports.joinTransaction = (0, express_async_handler_1.default)((req, res) => __a
     const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId;
     const { txnId } = req.params;
     if (!userId) {
-        throw new unauth_1.default('Invalid request user');
+        throw new unAuth_1.default('Invalid request user');
     }
     //Find the transaction
     const txn = yield db_1.default.transactions.findUnique({
@@ -234,7 +234,7 @@ exports.makePayment = (0, express_async_handler_1.default)((req, res) => __await
     const { txnId } = req.params;
     const email = (_a = req.user) === null || _a === void 0 ? void 0 : _a.email;
     if (!email) {
-        throw new unauth_1.default('User is not logged in');
+        throw new unAuth_1.default('User is not logged in');
     }
     const requiredTxn = yield db_1.default.transactions.findUnique({
         where: { id: txnId },

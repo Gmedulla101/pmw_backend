@@ -1,6 +1,6 @@
 import prisma from '../db';
 import { StatusCodes } from 'http-status-codes';
-import UnAuthenticatedError from '../errors/unauth';
+import UnAuthenticatedError from '../errors/unAuth';
 import BadRequestError from '../errors/bad-request';
 import NotFound from '../errors/not-found';
 import { ModifiedReq } from '../middleware/auth-middleware';

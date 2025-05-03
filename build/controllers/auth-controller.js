@@ -15,7 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.confirmCodeResetPassword = exports.confirmEmailSendOTP = exports.login = exports.register = void 0;
 const db_1 = __importDefault(require("../db"));
 const http_status_codes_1 = require("http-status-codes");
-const unauth_1 = __importDefault(require("../errors/unauth"));
+const unAuth_1 = __importDefault(require("../errors/unAuth"));
 const bad_request_1 = __importDefault(require("../errors/bad-request"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
@@ -101,7 +101,7 @@ exports.login = (0, express_async_handler_1.default)((req, res) => __awaiter(voi
     //IF THE USER EXISTS CHECK IF THE PASSWORD IS CORRECT
     const isPasswordCorrect = yield bcryptjs_1.default.compare(password, existingUser.password);
     if (!isPasswordCorrect) {
-        throw new unauth_1.default('The password you entered is not correct');
+        throw new unAuth_1.default('The password you entered is not correct');
     }
     //IF PASSWORD IS CORRECT, TOKENISE AND PROCEED
     const authSecret = process.env.JWT_SECRET;

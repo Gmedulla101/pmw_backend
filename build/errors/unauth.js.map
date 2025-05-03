@@ -1,1 +1,1 @@
-{"version":3,"file":"unauth.js","sourceRoot":"","sources":["../../src/errors/unauth.ts"],"names":[],"mappings":";;;;;AAAA,kEAA4C;AAC5C,yDAAgD;AAEhD,MAAqB,oBAAqB,SAAQ,sBAAc;IAC9D,YAAY,OAAe;QACzB,KAAK,CAAC,OAAO,EAAE,+BAAW,CAAC,YAAY,CAAC,CAAC;IAC3C,CAAC;CACF;AAJD,uCAIC"}
+{"version":3,"file":"unAuth.js","sourceRoot":"","sources":["../../src/errors/unAuth.ts"],"names":[],"mappings":";;;;;AAAA,kEAA4C;AAC5C,yDAAgD;AAEhD,MAAqB,oBAAqB,SAAQ,sBAAc;IAC9D,YAAY,OAAe;QACzB,KAAK,CAAC,OAAO,EAAE,+BAAW,CAAC,YAAY,CAAC,CAAC;IAC3C,CAAC;CACF;AAJD,uCAIC"}

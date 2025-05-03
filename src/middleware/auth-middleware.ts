@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import UnAuthenticatedError from '../errors/unauth';
+import UnAuthenticatedError from '../errors/unAuth';
 import jwt from 'jsonwebtoken';
 
 export interface ModifiedReq extends Request {
