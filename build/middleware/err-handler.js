@@ -9,6 +9,7 @@ const http_status_codes_1 = require("http-status-codes");
   keyValue: any;
 } */
 const errorHandlerMiddleware = (err, req, res, next) => {
+    var _a;
     let customError = {
         statusCode: err.statusCode || http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR,
         msg: err.message || 'Something went wrong, please try again later',
@@ -34,6 +35,11 @@ const errorHandlerMiddleware = (err, req, res, next) => {
     if (err.code === 'P2003') {
         customError.msg = 'Invalid seller or buyer ID provided';
         customError.statusCode = 400;
+    }
+    //PAYSTACK INVALIDITY ERROR
+    if (err.response.data.type === 'validation_error') {
+        customError.msg = err.response.data.message;
+        customError.statusCode = (_a = err === null || err === void 0 ? void 0 : err.response) === null || _a === void 0 ? void 0 : _a.status;
     }
     // return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ err });
     res.status(customError.statusCode).json({ msg: customError.msg });

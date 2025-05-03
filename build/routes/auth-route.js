@@ -6,5 +6,6 @@ const authRouter = (0, express_1.Router)();
 authRouter.post('/register-user', auth_controller_1.register);
 authRouter.post('/user-login', auth_controller_1.login);
 authRouter.post('/confirm-email', auth_controller_1.confirmEmailSendOTP);
+authRouter.post('/reset-password', auth_controller_1.confirmCodeResetPassword);
 exports.default = authRouter;
 //# sourceMappingURL=auth-route.js.map

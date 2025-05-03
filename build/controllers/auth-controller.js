@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.confirmEmailSendOTP = exports.login = exports.register = void 0;
+exports.confirmCodeResetPassword = exports.confirmEmailSendOTP = exports.login = exports.register = void 0;
 const db_1 = __importDefault(require("../db"));
 const http_status_codes_1 = require("http-status-codes");
 const unauth_1 = __importDefault(require("../errors/unauth"));
@@ -22,7 +22,8 @@ const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const express_async_handler_1 = __importDefault(require("express-async-handler"));
 const not_found_1 = __importDefault(require("../errors/not-found"));
 //////
-const resend_1 = require("resend");
+const nodemailer_1 = __importDefault(require("../utils/nodemailer"));
+const fg_pswd_info_1 = __importDefault(require("../utils/fg-pswd-info"));
 //USER REGISTRATION
 exports.register = (0, express_async_handler_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const { username, password, email, firstName, lastName } = req.body;
@@ -131,8 +132,12 @@ exports.login = (0, express_async_handler_1.default)((req, res) => __awaiter(voi
         },
     });
 }));
+//CONFIRMING EMAIL TO SEND THE RESET CODE
 exports.confirmEmailSendOTP = (0, express_async_handler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { email } = req.body;
+    if (!email) {
+        throw new bad_request_1.default('Please fill in all the fields');
+    }
     const existingUser = yield db_1.default.users.findUnique({
         where: {
             email,
@@ -141,72 +146,57 @@ exports.confirmEmailSendOTP = (0, express_async_handler_1.default)((req, res) =>
     if (!existingUser) {
         throw new not_found_1.default('The requested user does not exist');
     }
-    //GENERATING USER CONFIRMATION CODE AND ADDING IT TO THE USER CONFIRMATION TABLE
-    const randomNumber = Math.floor(1000 + Math.random() * 9000);
-    yield db_1.default.userConfirmation.update({
-        where: {
-            userEmail: existingUser.email,
+    const randomNumber = Math.floor(100000 + Math.random() * 900000);
+    const newEmailInfo = (0, fg_pswd_info_1.default)(existingUser.email, randomNumber);
+    //IF THE USER CONFIRMATION ROW ALREADY EXISTS, IT WILL BE UPDATED ACCORDINGLY
+    yield db_1.default.userConfirmation.upsert({
+        where: { email },
+        update: {
+            confirmationCode: randomNumber,
         },
-        data: {
+        create: {
+            email,
             confirmationCode: randomNumber,
         },
     });
-    const RESEND_KEY = process.env.RESEND_KEY;
-    if (!RESEND_KEY) {
-        throw new Error('Email key missing');
+    nodemailer_1.default.sendMail(newEmailInfo, (error, info) => {
+        if (error) {
+            throw new bad_request_1.default(`Error sending email: ${JSON.stringify(error)}`);
+        }
+        else {
+            res.status(http_status_codes_1.StatusCodes.OK).json({
+                success: true,
+                msg: 'Email confirmed, confirmation code sent',
+                response: info.response,
+                userId: existingUser.id,
+            });
+        }
+    });
+}));
+exports.confirmCodeResetPassword = (0, express_async_handler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { code, email, password } = req.body;
+    const userConfirmation = yield db_1.default.userConfirmation.findUnique({
+        where: { email },
+    });
+    if (!userConfirmation) {
+        throw new bad_request_1.default('This user has not requested for a password reset');
     }
-    const resend = new resend_1.Resend(RESEND_KEY);
-    resend.emails.send({
-        from: 'edoseghegreat41@gmail.com',
-        to: existingUser.email,
-        subject: 'Email confirmation',
-        html: `<main
-      style="
-        font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande',
-          'Lucida Sans', Arial, sans-serif;
-      "
-    >
-      <div
-        style="
-          background-color: black;
-          color: white;
-          padding: 10px;
-          margin-bottom: 40px;
-        "
-      >
-        <h1 style="text-align: center">Payway</h1>
-      </div>
-
-      <div style="text-align: center">
-        <p>
-          This is a confirmation email to reset your password, If you did't
-          start this process, please ignore this email.
-        </p>
-        <p>If this was you, use the code below to reset your password</p>
-
-        <div style="display: flex; justify-content: center">
-          <div></div>
-            <p
-              style="
-                width: 60%;
-                background-color: black;
-                padding: 10px 0;
-                border-radius: 8px;
-                color: white;
-                text-decoration: none;
-                color: white;
-              "
-            >
-              ${randomNumber}
-            </p>
-          </div>
-        </div>
-      </div>
-    </main>`,
+    //CHECKING THE CONFIRMATION CODE
+    if (userConfirmation.confirmationCode !== Number(code)) {
+        throw new bad_request_1.default('The entered code is incorrect. Try again');
+    }
+    //ENCRYPTING THE PASSWORD
+    const hashedSalt = yield bcryptjs_1.default.genSalt(10);
+    const hashedPassword = yield bcryptjs_1.default.hash(password, hashedSalt);
+    yield db_1.default.users.update({
+        where: { email },
+        data: {
+            password: hashedPassword,
+        },
     });
     res.status(http_status_codes_1.StatusCodes.OK).json({
         success: true,
-        msg: 'Email confirmed, confirmation code sent',
+        msg: 'Password reset succesful, proceeed to login',
     });
 }));
 //# sourceMappingURL=auth-controller.js.map
