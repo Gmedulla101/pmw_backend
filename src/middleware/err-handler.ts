@@ -50,7 +50,7 @@ const errorHandlerMiddleware = (
   }
 
   //PAYSTACK INVALIDITY ERROR
-  if (err.response.data.type === 'validation_error') {
+  if (err.response?.data?.type === 'validation_error') {
     customError.msg = err.response.data.message;
     customError.statusCode = err?.response?.status;
   }
