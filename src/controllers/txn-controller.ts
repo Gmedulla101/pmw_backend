@@ -16,9 +16,6 @@ import asyncHandler from 'express-async-handler';
 import transporter from '../utils/nodemailer';
 import generateCreateTxnEmail from '../utils/join-txn-info';
 import sendPaymentConfimrationEmail from '../utils/confirm-payment-info';
-import { transferableAbortController } from 'util';
-import { send } from 'process';
-import { STATUS_CODES } from 'http';
 
 //CREATE TRANSACTION FUNCTIONALITY
 export const createTransaction = asyncHandler(
