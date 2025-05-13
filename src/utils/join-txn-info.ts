@@ -29,7 +29,7 @@ const generateCreateTxnEmail = (email: string, txnId: string) => {
         <div style="text-align: center; width: 200px; margin: 50px auto;">
     
             <a
-              href="http://localhost:5173/transaction/${txnId}"
+              href="https://pmw-frontend.vercel.app/transaction/${txnId}"
               style="
                 width: 60%;
                 background-color: black;

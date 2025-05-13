@@ -326,7 +326,7 @@ export const makePayment = asyncHandler(
           100
         ).toString(),
         email,
-        callback_url: `http://localhost:5173/transaction/${requiredTxn.id}`,
+        callback_url: `https://pmw-frontend.vercel.app//transaction/${requiredTxn.id}`,
         reference: 'pay' + '_' + requiredTxn.id,
       },
       {
